@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Letter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ffeef8 0%, #ffe8e0 50%, #fff5ee 100%);
+            font-family: 'Cormorant Garamond', serif;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            perspective: 1000px;
+        }
+
+        /* Envelope Styles */
+        .envelope-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.02);
+        }
+
+        .envelope-wrapper.opened {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            padding-bottom: 70%;
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%);
+            border-radius: 4px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.6s ease;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(135deg, #ffeee5 0%, #ffd9cc 100%);
+            transform-origin: top;
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+            z-index: 3;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .envelope-flap::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .envelope-wrapper.opened .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        .envelope-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%);
+            border-radius: 0 0 4px 4px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .heart-seal {
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff9ab5 0%, #d4718b 100%);
+            border-radius: 50%;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(212, 113, 139, 0.4);
+            animation: heartbeat 2s ease-in-out infinite;
+            transition: all 0.6s ease;
+        }
+
+        .envelope-wrapper.opened .heart-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .heart-seal svg {
+            width: 35px;
+            height: 35px;
+            fill: #fff;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Great Vibes', cursive;
+            font-size: 24px;
+            color: #d4718b;
+            opacity: 0.8;
+            animation: fadeInOut 2s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        .envelope-wrapper.opened .click-hint {
+            display: none;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Letter reveal animation */
+        .letter-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 20%);
+            width: 140%;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .envelope-wrapper.opened + .letter-container {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+        }
+
+        .envelope-wrapper.opened {
+            opacity: 0;
+            transform: scale(0.8) translateY(-100px);
+        }
+
+        .letter-inner {
+            position: relative;
+            width: 100%;
+            transform: rotateX(2deg) rotateY(-1deg);
+            animation: gentleFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes gentleFloat {
+            0%, 100% { transform: rotateX(2deg) rotateY(-1deg) translateY(0px); }
+            50% { transform: rotateX(2deg) rotateY(-1deg) translateY(-8px); }
+        }
+
+        .paper {
+            background: linear-gradient(135deg, #fffbf7 0%, #fff9f4 100%);
+            padding: 60px 50px;
+            border-radius: 3px;
+            box-shadow: 
+                0 15px 50px rgba(0, 0, 0, 0.08),
+                0 5px 15px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+            border: 1px solid rgba(255, 240, 230, 0.8);
+        }
+
+        .paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    transparent,
+                    transparent 31px,
+                    rgba(255, 200, 180, 0.03) 31px,
+                    rgba(255, 200, 180, 0.03) 32px
+                );
+            pointer-events: none;
+            border-radius: 3px;
+        }
+
+        .paper::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 220, 200, 0.15), transparent 70%);
+            filter: blur(20px);
+            z-index: -1;
+            border-radius: 3px;
+        }
+
+        .fold-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                rgba(200, 180, 160, 0.1) 20%, 
+                rgba(200, 180, 160, 0.15) 50%, 
+                rgba(200, 180, 160, 0.1) 80%, 
+                transparent 100%);
+            transform: translateX(-50%);
+        }
+
+        .letter-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .salutation {
+            font-family: 'Great Vibes', cursive;
+            font-size: 48px;
+            color: #d4718b;
+            margin-bottom: 30px;
+            text-align: left;
+            text-shadow: 0 2px 4px rgba(212, 113, 139, 0.1);
+        }
+
+        .body-text {
+            font-size: 18px;
+            line-height: 2;
+            color: #5a4a42;
+            text-align: justify;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+
+        .body-text:first-of-type::first-letter {
+            font-size: 64px;
+            font-family: 'Great Vibes', cursive;
+            color: #d4718b;
+            float: left;
+            line-height: 0.8;
+            margin: 10px 8px 0 0;
+        }
+
+        .signature {
+            font-family: 'Great Vibes', cursive;
+            font-size: 42px;
+            color: #d4718b;
+            margin-top: 40px;
+            text-align: right;
+            text-shadow: 0 2px 4px rgba(212, 113, 139, 0.1);
+        }
+
+        .carnation {
+            position: absolute;
+            bottom: -60px;
+            right: 450px;
+            width: 280px;
+            height: 280px;
+            transform: rotate(-15deg);
+            filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15));
+            z-index: 10;
+            animation: petalSway 4s ease-in-out infinite;
+        }
+
+        @keyframes petalSway {
+            0%, 100% { transform: rotate(-15deg) translateY(0px); }
+            50% { transform: rotate(-13deg) translateY(-5px); }
+        }
+
+        .carnation svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .petal {
+            animation: subtleMove 8s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes subtleMove {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .heart-accent {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            opacity: 0.15;
+        }
+
+        .heart-1 { top: 40px; right: 80px; animation: floatHeart 6s ease-in-out infinite; }
+        .heart-2 { bottom: 100px; left: 60px; animation: floatHeart 7s ease-in-out infinite 1s; }
+        .heart-3 { top: 120px; left: 100px; animation: floatHeart 8s ease-in-out infinite 2s; }
+
+        @keyframes floatHeart {
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.15; }
+            50% { transform: translateY(-20px) scale(1.1); opacity: 0.25; }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .scene {
+                max-width: 100%;
+            }
+
+            /* Envelope mobile styles */
+            .envelope-wrapper {
+                max-width: 90%;
+            }
+
+            .heart-seal {
+                width: 50px;
+                height: 50px;
+            }
+
+            .heart-seal svg {
+                width: 28px;
+                height: 28px;
+            }
+
+            .click-hint {
+                font-size: 20px;
+                bottom: -40px;
+            }
+
+            /* Letter mobile styles */
+            .letter-container {
+                width: 100%;
+                padding: 0 10px;
+            }
+
+            .paper {
+                padding: 30px 25px;
+            }
+            
+            .salutation {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+            
+            .body-text {
+                font-size: 15px;
+                line-height: 1.8;
+                margin-bottom: 15px;
+            }
+
+            .body-text:first-of-type::first-letter {
+                font-size: 48px;
+                margin: 5px 6px 0 0;
+            }
+            
+            .signature {
+                font-size: 28px;
+                margin-top: 30px;
+            }
+            
+            .carnation {
+                width: 180px;
+                height: 180px;
+                bottom: -40px;
+                right: 150px;
+            }
+
+            .heart-accent {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            /* Smaller mobile envelope */
+            .envelope-wrapper {
+                max-width: 95%;
+            }
+
+            .heart-seal {
+                width: 45px;
+                height: 45px;
+            }
+
+            .heart-seal svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .click-hint {
+                font-size: 18px;
+                bottom: -35px;
+            }
+
+            /* Smaller mobile letter */
+            .paper {
+                padding: 25px 20px;
+            }
+            
+            .salutation {
+                font-size: 28px;
+                margin-bottom: 15px;
+            }
+            
+            .body-text {
+                font-size: 14px;
+                line-height: 1.7;
+                text-align: left;
+            }
+
+            .body-text:first-of-type::first-letter {
+                font-size: 42px;
+                margin: 3px 5px 0 0;
+            }
+            
+            .signature {
+                font-size: 24px;
+                margin-top: 25px;
+            }
+            
+            .carnation {
+                width: 150px;
+                height: 150px;
+                bottom: -35px;
+                right: 10px;
+            }
+
+            .heart-accent {
+                width: 10px;
+                height: 10px;
+            }
+
+            .heart-1 { top: 30px; right: 40px; }
+            .heart-2 { bottom: 80px; left: 40px; }
+            .heart-3 { top: 100px; left: 60px; }
+        }
+
+        @media (max-width: 360px) {
+            .paper {
+                padding: 20px 15px;
+            }
+
+            .salutation {
+                font-size: 24px;
+            }
+
+            .body-text {
+                font-size: 13px;
+            }
+
+            .signature {
+                font-size: 22px;
+            }
+
+            .carnation {
+                width: 120px;
+                height: 120px;
+                bottom: -30px;
+                right: 5px;
+            }
+
+            .click-hint {
+                font-size: 16px;
+            }
+        }
+
+        /* Landscape mobile orientation */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+
+            .envelope-wrapper {
+                max-width: 400px;
+            }
+
+            .letter-container {
+                width: 120%;
+            }
+
+            .carnation {
+                width: 160px;
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <!-- Envelope -->
+        <div class="envelope-wrapper" id="envelope">
+            <div class="envelope">
+                <div class="envelope-flap"></div>
+                <div class="envelope-body"></div>
+                <div class="heart-seal">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="click-hint">Click to open</div>
+        </div>
+
+        <!-- Letter -->
+        <div class="letter-container" id="letter">
+            <div class="letter-inner">
+                <div class="paper">
+                    <div class="fold-line"></div>
+                    
+                    <div class="letter-content">
+                        <div class="salutation">Hi Lablab,</div>
+                        
+                        <p class="body-text">
+                            Happy Valentine's Day, my love. ❤️
+                        </p>
+                        
+                        <p class="body-text">
+                            First of all, thank you for always being there for me. You've stayed through everything, and that means more than I can ever fully explain. I know you love reading, so today I wanted to give you something written straight from my heart — my very first love letter to you. I'm not writing this because I feel forced to, but because I truly want to.
+                        </p>
+                        
+                        <p class="body-text">
+                            It's been almost eight years of us — even through the times we weren't together. Awww :((. We've been through so much. You know I had a messy past, and I deeply regret the mistakes I made. Thank you for giving me anotherrrr chance and for choosing to accept me again. I promise to do better and to never repeat the same mistakes.
+                        </p>
+                        
+                        <p class="body-text">
+                            If I had to live a thousand lifetimes, I would still choose you every single time. You are my forever person.
+                        </p>
+                        
+                        <p class="body-text">
+                            I want you to know that just like you've always been there for me, I will always be here for you too — supporting you, protecting you, and loving you in every way I can. I hope you're always doing well, and I pray for your happiness every day.
+                        </p>
+                        
+                        <p class="body-text">
+                            I love you more than words can say. 💖
+                        </p>
+                        
+                        <div class="signature">Forever yours,<br>Lawrence your bb.</div>
+                    </div>
+
+                    <!-- Heart accents -->
+                    <svg class="heart-accent heart-1" viewBox="0 0 24 24" fill="#d4718b">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <svg class="heart-accent heart-2" viewBox="0 0 24 24" fill="#d4718b">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <svg class="heart-accent heart-3" viewBox="0 0 24 24" fill="#d4718b">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+
+                <!-- Carnation Flower -->
+                <div class="carnation">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Stem -->
+                        <path d="M100 150 Q95 170 90 190" stroke="#5d8a5d" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        
+                        <!-- Leaves -->
+                        <path d="M95 165 Q80 168 75 162 Q80 158 95 162" fill="#7cb07c" opacity="0.9"/>
+                        <path d="M92 175 Q105 178 110 172 Q105 168 92 172" fill="#7cb07c" opacity="0.9"/>
+                        
+                        <!-- Flower base/calyx -->
+                        <ellipse cx="100" cy="150" rx="15" ry="8" fill="#8db88d" opacity="0.8"/>
+                        
+                        <!-- Outer petals layer -->
+                        <g class="petal">
+                            <ellipse cx="100" cy="100" rx="35" ry="45" fill="#f4c4d4" opacity="0.6" transform="rotate(0 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="35" ry="45" fill="#f4c4d4" opacity="0.6" transform="rotate(45 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="35" ry="45" fill="#f4c4d4" opacity="0.6" transform="rotate(90 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="35" ry="45" fill="#f4c4d4" opacity="0.6" transform="rotate(135 100 100)"/>
+                        </g>
+                        
+                        <!-- Mid petals layer -->
+                        <g class="petal">
+                            <ellipse cx="100" cy="100" rx="28" ry="38" fill="#f7d5e0" opacity="0.7" transform="rotate(22 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="28" ry="38" fill="#f7d5e0" opacity="0.7" transform="rotate(67 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="28" ry="38" fill="#f7d5e0" opacity="0.7" transform="rotate(112 100 100)"/>
+                            <ellipse cx="100" cy="100" rx="28" ry="38" fill="#f7d5e0" opacity="0.7" transform="rotate(157 100 100)"/>
+                        </g>
+                        
+                        <!-- Inner ruffled petals -->
+                        <g class="petal">
+                            <path d="M100 85 Q95 75 100 70 Q105 75 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q110 80 115 85 Q110 90 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q105 95 100 100 Q95 95 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q90 80 85 85 Q90 90 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q92 72 97 67 Q102 72 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q108 72 103 67 Q98 72 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q112 88 117 93 Q112 98 100 85" fill="#fce5ed" opacity="0.9"/>
+                            <path d="M100 85 Q88 88 83 93 Q88 98 100 85" fill="#fce5ed" opacity="0.9"/>
+                        </g>
+                        
+                        <!-- Center details -->
+                        <g class="petal">
+                            <circle cx="100" cy="85" r="8" fill="#ffa0c0" opacity="0.8"/>
+                            <circle cx="100" cy="85" r="5" fill="#ff86b0" opacity="0.9"/>
+                            <circle cx="98" cy="83" r="2" fill="#fff" opacity="0.6"/>
+                        </g>
+                        
+                        <!-- Petal edges/frills -->
+                        <g opacity="0.3">
+                            <path d="M100 70 Q95 65 100 60" stroke="#d4718b" stroke-width="0.5" fill="none"/>
+                            <path d="M115 85 Q120 80 125 85" stroke="#d4718b" stroke-width="0.5" fill="none"/>
+                            <path d="M100 100 Q105 105 100 110" stroke="#d4718b" stroke-width="0.5" fill="none"/>
+                            <path d="M85 85 Q80 80 75 85" stroke="#d4718b" stroke-width="0.5" fill="none"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        
+        envelope.addEventListener('click', function() {
+            envelope.classList.add('opened');
+        });
+    </script>
+</body>
+</html>
